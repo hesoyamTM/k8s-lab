@@ -1,0 +1,32 @@
+# Статический S3 PV для dev. Монтирует бакет MinIO "message-uploads" через CSI (geesefs).
+# claimRef жёстко привязывает PV к PVC message-uploads-pvc в namespace messager.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: dev-s3-pv-uploads
+spec:
+  storageClassName: csi-s3
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    namespace: messager
+    name: message-uploads-pvc
+  csi:
+    driver: ru.yandex.s3.csi
+    volumeHandle: message-uploads
+    controllerPublishSecretRef:
+      name: csi-s3-secret
+      namespace: messager
+    nodePublishSecretRef:
+      name: csi-s3-secret
+      namespace: messager
+    nodeStageSecretRef:
+      name: csi-s3-secret
+      namespace: messager
+    volumeAttributes:
+      capacity: 10Gi
+      mounter: geesefs
+      options: "--memory-limit 1000 --dir-mode 0777 --file-mode 0666"

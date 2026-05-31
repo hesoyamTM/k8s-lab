@@ -1,0 +1,42 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# prod — отдельный namespace, реплики >=2, повышенные ресурсы, образы по фиксированному digest.
+namespace: messager-prod
+
+resources:
+  - ../../base
+  - s3-pv.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/environment: prod
+    includeSelectors: false
+
+# Реплики прикладных сервисов в prod >= 2.
+replicas:
+  - name: frontend
+    count: 2
+  - name: bff
+    count: 2
+  - name: user-service
+    count: 2
+  - name: message-service
+    count: 2
+
+# Повышенные ресурсы и prod-host для Ingress.
+patches:
+  - path: patches/resources.yaml
+  - path: patches/ingress-host.yaml
+  - path: patches/csi-s3-endpoint.yaml
+
+# Воспроизводимость: фиксированный digest вместо плавающего latest.
+images:
+  - name: mablinov2704/frontend
+    digest: sha256:3e7b5052ee45495d656d46aedb41afd1e9aab5d544c02e0f2dfa175d3abeb133
+  - name: mablinov2704/bff
+    digest: sha256:b3c4aa354ed1592be2aeef30ec526c8dd6842c30e6578ed5d441e5f9a25f82ad
+  - name: mablinov2704/user-service
+    digest: sha256:d4ab7bc410efabcaeb2581b33a0a8484434e2c0a8b99673b597fe168966e4c94
+  - name: mablinov2704/message-service
+    digest: sha256:bd0afef8fb344306f79880f682cc54078f84dbc08a08e45278409403bed6613b

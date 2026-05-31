@@ -1,0 +1,7 @@
+# prod-namespace требует свой FQDN MinIO для CSI-монтирования.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: csi-s3-secret
+stringData:
+  endpoint: "http://minio.messager-prod.svc.cluster.local:9000"

@@ -1,0 +1,31 @@
+# Статический S3 PV для prod. Тот же бакет MinIO, но с префиксом /prod (изоляция от dev).
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: prod-s3-pv-uploads
+spec:
+  storageClassName: csi-s3
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    namespace: messager-prod
+    name: message-uploads-pvc
+  csi:
+    driver: ru.yandex.s3.csi
+    volumeHandle: message-uploads/prod
+    controllerPublishSecretRef:
+      name: csi-s3-secret
+      namespace: messager-prod
+    nodePublishSecretRef:
+      name: csi-s3-secret
+      namespace: messager-prod
+    nodeStageSecretRef:
+      name: csi-s3-secret
+      namespace: messager-prod
+    volumeAttributes:
+      capacity: 10Gi
+      mounter: geesefs
+      options: "--memory-limit 1000 --dir-mode 0777 --file-mode 0666"

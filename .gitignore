@@ -1,0 +1,6 @@
+# локальные артефакты
+*.log
+*.tmp
+.DS_Store
+/tmp/
+kubeconfig*

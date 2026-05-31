@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-bucket
+spec:
+  backoffLimit: 5
+  template:
+    metadata:
+      labels:
+        app: create-bucket
+    spec:
+      restartPolicy: Never
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: workload
+                    operator: In
+                    values: ["app"]
+      containers:
+        - name: mc
+          image: minio/mc:latest
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              until mc alias set local http://minio:9000 "$ACCESS_KEY" "$SECRET_KEY"; do
+                echo "waiting for minio..."; sleep 3;
+              done
+              mc mb -p local/message-uploads || true
+              mc ls local/message-uploads
+              echo "bucket ready"
+          env:
+            - name: ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: accessKeyID
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: secretAccessKey

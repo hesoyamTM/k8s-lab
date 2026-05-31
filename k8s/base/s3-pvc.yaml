@@ -1,0 +1,14 @@
+# PVC для файлов message-service. Биндится к статическому S3 PV (см. overlays/*/s3-pv.yaml),
+# который монтирует бакет MinIO через CSI-драйвер ru.yandex.s3.csi (geesefs).
+# Привязка детерминирована через claimRef на стороне PV.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: message-uploads-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: csi-s3
+  resources:
+    requests:
+      storage: 10Gi
